@@ -118,16 +118,16 @@ class MainActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             try {
-                //val newTask = Task(dateStart = "2024-12-21 22:22:22", dateFinish = "2024-12-21 23:23:23", name = "ДЗ", description = "Матем, русский")
-                //db.taskDao().insert(newTask)
-                val tasksList = db.taskDao().getAllTasks()
+                //val newTask = Task(dateStart = "2024-12-22 22:22:22", dateFinish = "2024-12-22 23:23:23", name = "ДЗ", description = "Матем, русский")
+                //db.taskListDao().addTaskToList(newTask)
+                val tasksList = TaskListTypeConverter().toTaskList(db.taskListDao().getAllTaskLists()[0].tasksJson)
                 adapter0.setTasks(tasksList.filter {
                     stringToTimestamp(it.dateStart)?.getDate() == calendar.getSelectedDates().first().getDate()
                 })
-                tasksList.map { Log.e("VIK", "${stringToTimestamp(it.dateStart)?.getTime()}")
-                    Log.e("VIK", "${System.currentTimeMillis()}")
-                    stringToTimestamp(it.dateStart)?.getTime()!! < System.currentTimeMillis()
-                    }
+//                tasksList.map { Log.e("VIK", "${stringToTimestamp(it.dateStart)?.getTime()}")
+//                    Log.e("VIK", "${System.currentTimeMillis()}")
+//                    stringToTimestamp(it.dateStart)?.getTime()!! < System.currentTimeMillis()
+//                    }
             } catch (e: Exception) {
             }
         }
@@ -174,7 +174,7 @@ class MainActivity : AppCompatActivity() {
 
             override fun whenSelectionChanged(isSelected: Boolean, position: Int, date: Date) {
                 super.whenSelectionChanged(isSelected, position, date)
-                //loadTasksForDate(date)
+                fetchTasks()
             }
 
             override fun whenCalendarScrolled(dx: Int, dy: Int) {
