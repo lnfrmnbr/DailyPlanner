@@ -29,14 +29,45 @@ import android.content.Context.MODE_PRIVATE
 import android.widget.ScrollView
 import android.widget.TableRow
 import kotlinx.coroutines.withContext
+import java.sql.Timestamp
 
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 class MainActivity : AppCompatActivity() {
     private lateinit var recyclerView1: RecyclerView
-    private lateinit var adapter: TasksAdapter
+
+    private lateinit var adapter0: TasksAdapter
+//    private lateinit var adapter1: TasksAdapter
+//    private lateinit var adapter2: TasksAdapter
+//    private lateinit var adapter3: TasksAdapter
+//    private lateinit var adapter4: TasksAdapter
+//    private lateinit var adapter5: TasksAdapter
+//    private lateinit var adapter6: TasksAdapter
+//    private lateinit var adapter7: TasksAdapter
+//    private lateinit var adapter8: TasksAdapter
+//    private lateinit var adapter9: TasksAdapter
+//    private lateinit var adapter10: TasksAdapter
+//    private lateinit var adapter11: TasksAdapter
+//    private lateinit var adapter12: TasksAdapter
+//    private lateinit var adapter13: TasksAdapter
+//    private lateinit var adapter14: TasksAdapter
+//    private lateinit var adapter15: TasksAdapter
+//    private lateinit var adapter16: TasksAdapter
+//    private lateinit var adapter17: TasksAdapter
+//    private lateinit var adapter18: TasksAdapter
+//    private lateinit var adapter19: TasksAdapter
+//    private lateinit var adapter20: TasksAdapter
+//    private lateinit var adapter21: TasksAdapter
+//    private lateinit var adapter22: TasksAdapter
+//    private lateinit var adapter23: TasksAdapter
+
     private val tasks = mutableListOf<Task>()
-    private lateinit var db: AppDatabase  // Измените на lateinit
+    private lateinit var db: AppDatabase
     private lateinit var scrollView: ScrollView
+    private lateinit var calendar: SingleRowCalendar
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -50,29 +81,53 @@ class MainActivity : AppCompatActivity() {
             insets
         }
         scrollView = findViewById(R.id.scrollView)
+        calendar = findViewById(R.id.main_single_row_calendar)
+
         setupCalendar()
 
         scrollView.post {
             scrollView.scrollTo( 0,  findViewById<TableRow>(R.id.row8).top)
         }
-
         db = AppDatabase.getDatabase(this)
 
-        adapter = TasksAdapter(tasks, ::onEditTask, ::onDeleteTask)
         recyclerView1 = findViewById(R.id.tasks0)
-        recyclerView1.adapter = adapter
+        adapter0 = TasksAdapter(tasks, ::onEditTask, ::onDeleteTask)
+        recyclerView1.adapter = adapter0
         recyclerView1.layoutManager = LinearLayoutManager(this)
 
         fetchTasks()
+
+    }
+
+    fun stringToTimestamp(dateString: String): Timestamp? {
+        return try {
+            val format = "yyyy-MM-dd HH:mm:ss"
+
+            val dateFormat = SimpleDateFormat(format, Locale.getDefault())
+
+            val date: Date = dateFormat.parse(dateString) ?: return null
+
+            Timestamp(date.time)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
     }
 
     private fun fetchTasks() {
 
         lifecycleScope.launch {
             try {
+                //val newTask = Task(dateStart = "2024-12-21 22:22:22", dateFinish = "2024-12-21 23:23:23", name = "ДЗ", description = "Матем, русский")
+                //db.taskDao().insert(newTask)
                 val tasksList = db.taskDao().getAllTasks()
-                Log.e("VIK","$tasksList")
-                adapter.setTasks(tasksList)
+                adapter0.setTasks(tasksList.filter {
+                    stringToTimestamp(it.dateStart)?.getDate() == calendar.getSelectedDates().first().getDate()
+                })
+                tasksList.map { Log.e("VIK", "${stringToTimestamp(it.dateStart)?.getTime()}")
+                    Log.e("VIK", "${System.currentTimeMillis()}")
+                    stringToTimestamp(it.dateStart)?.getTime()!! < System.currentTimeMillis()
+                    }
             } catch (e: Exception) {
             }
         }
@@ -87,8 +142,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupCalendar(){
-        val calendar = findViewById<SingleRowCalendar>(R.id.main_single_row_calendar)
-
         val myCalendarViewManager = object : CalendarViewManager {
             override fun setCalendarViewResourceId(position: Int, date: Date, isSelected: Boolean): Int {
                 return R.layout.calendar_item_layout
