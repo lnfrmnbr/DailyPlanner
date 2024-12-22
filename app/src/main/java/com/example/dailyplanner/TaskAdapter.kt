@@ -1,18 +1,21 @@
 package com.example.dailyplanner
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
+
 
 class TasksAdapter(
-    private val tasks: MutableList<Task>,
-    private val onEditClick: (Task) -> Unit,
-    private val onDeleteClick: (Long) -> Unit
-) : RecyclerView.Adapter<TasksAdapter.EmployeeViewHolder>() {
+    private val tasks: MutableList<Task>
+) : RecyclerView.Adapter<TasksAdapter.TaskViewHolder>() {
 
-    inner class EmployeeViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    inner class TaskViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val taskName: TextView = itemView.findViewById(R.id.taskName)
         private val taskDescr: TextView = itemView.findViewById(R.id.taskDescr)
         private val taskTime: TextView = itemView.findViewById(R.id.taskTime)
@@ -20,23 +23,25 @@ class TasksAdapter(
         fun bind(task: Task) {
             taskName.text = "${task.name}"
             taskDescr.text = "${task.description} "
-//
-//            itemView.findViewById<Button>(R.id.editButton).setOnClickListener {
-//                    onEditClick(employer)
-//            }
-//            itemView.findViewById<Button>(R.id.deleteButton).setOnClickListener {
-//                    employer.id?.let { it1 -> onDeleteClick(it1) }
-//            }
-
+            taskTime.text = "${formatTime(task.dateStart)}-${formatTime(task.dateFinish)}"
         }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): EmployeeViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_task, parent, false)
-        return EmployeeViewHolder(view)
+    fun formatTime(dateTimeString: String): String {
+        val inputFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+        val outputFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
+
+        val date = inputFormat.parse(dateTimeString) ?: return ""
+
+        return outputFormat.format(date)
     }
 
-    override fun onBindViewHolder(holder: EmployeeViewHolder, position: Int) {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TaskViewHolder {
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_task, parent, false)
+        return TaskViewHolder(view)
+    }
+
+    override fun onBindViewHolder(holder: TaskViewHolder, position: Int) {
         holder.bind(tasks[position])
     }
 

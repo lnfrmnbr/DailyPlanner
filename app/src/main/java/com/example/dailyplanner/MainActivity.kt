@@ -28,58 +28,36 @@ import java.sql.Timestamp
 import java.util.Calendar
 
 class MainActivity : AppCompatActivity() {
-    private lateinit var recyclerView0: RecyclerView
-    private lateinit var recyclerView1: RecyclerView
-    private lateinit var recyclerView2: RecyclerView
-    private lateinit var recyclerView3: RecyclerView
-    private lateinit var recyclerView4: RecyclerView
-    private lateinit var recyclerView5: RecyclerView
-    private lateinit var recyclerView6: RecyclerView
-    private lateinit var recyclerView7: RecyclerView
-    private lateinit var recyclerView8: RecyclerView
-    private lateinit var recyclerView9: RecyclerView
-    private lateinit var recyclerView10: RecyclerView
-    private lateinit var recyclerView11: RecyclerView
-    private lateinit var recyclerView12: RecyclerView
-    private lateinit var recyclerView13: RecyclerView
-    private lateinit var recyclerView14: RecyclerView
-    private lateinit var recyclerView15: RecyclerView
-    private lateinit var recyclerView16: RecyclerView
-    private lateinit var recyclerView17: RecyclerView
-    private lateinit var recyclerView18: RecyclerView
-    private lateinit var recyclerView19: RecyclerView
-    private lateinit var recyclerView20: RecyclerView
-    private lateinit var recyclerView21: RecyclerView
-    private lateinit var recyclerView22: RecyclerView
+    private lateinit var adapter: TimeBoxAdapter
 
-
-    private lateinit var adapter0: TasksAdapter
-    private lateinit var adapter1: TasksAdapter
-    private lateinit var adapter2: TasksAdapter
-    private lateinit var adapter3: TasksAdapter
-    private lateinit var adapter4: TasksAdapter
-    private lateinit var adapter5: TasksAdapter
-    private lateinit var adapter6: TasksAdapter
-    private lateinit var adapter7: TasksAdapter
-    private lateinit var adapter8: TasksAdapter
-    private lateinit var adapter9: TasksAdapter
-    private lateinit var adapter10: TasksAdapter
-    private lateinit var adapter11: TasksAdapter
-    private lateinit var adapter12: TasksAdapter
-    private lateinit var adapter13: TasksAdapter
-    private lateinit var adapter14: TasksAdapter
-    private lateinit var adapter15: TasksAdapter
-    private lateinit var adapter16: TasksAdapter
-    private lateinit var adapter17: TasksAdapter
-    private lateinit var adapter18: TasksAdapter
-    private lateinit var adapter19: TasksAdapter
-    private lateinit var adapter20: TasksAdapter
-    private lateinit var adapter21: TasksAdapter
-    private lateinit var adapter22: TasksAdapter
-
-    private val tasks = mutableListOf<Task>()
+    private val times = mutableListOf(
+        TimeBox(0),
+        TimeBox(1),
+        TimeBox(2),
+        TimeBox(3),
+        TimeBox(4),
+        TimeBox(5),
+        TimeBox(6),
+        TimeBox(7),
+        TimeBox(8),
+        TimeBox(9),
+        TimeBox(10),
+        TimeBox(11),
+        TimeBox(12),
+        TimeBox(13),
+        TimeBox(14),
+        TimeBox(15),
+        TimeBox(16),
+        TimeBox(17),
+        TimeBox(18),
+        TimeBox(19),
+        TimeBox(20),
+        TimeBox(21),
+        TimeBox(22),
+        TimeBox(23)
+    )
     private lateinit var db: AppDatabase
-    private lateinit var scrollView: ScrollView
+    private lateinit var recyclerView: RecyclerView
     private lateinit var calendar: SingleRowCalendar
 
 
@@ -93,99 +71,20 @@ class MainActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-        scrollView = findViewById(R.id.scrollView)
+        recyclerView = findViewById(R.id.recyclerViewTimes)
         calendar = findViewById(R.id.main_single_row_calendar)
 
         setupCalendar()
 
-        scrollView.post {
-            scrollView.scrollTo(0, findViewById<TableRow>(R.id.row8).top)
-        }
         db = AppDatabase.getDatabase(this)
 
-        setupRecyclerViews()
+        adapter = TimeBoxAdapter(times = times, context = this)
+        recyclerView.adapter = adapter
+        recyclerView.layoutManager = LinearLayoutManager(this)
+
 
         fetchTasks()
 
-    }
-
-    private fun setupRecyclerViews() {
-        recyclerView0 = findViewById(R.id.tasks0)
-        adapter0 = TasksAdapter(tasks, ::onEditTask, ::onDeleteTask)
-        recyclerView0.adapter = adapter0
-        recyclerView0.layoutManager = LinearLayoutManager(this)
-
-        recyclerView1 = findViewById(R.id.tasks1)
-        adapter1 = TasksAdapter(tasks, ::onEditTask, ::onDeleteTask)
-        recyclerView1.adapter = adapter1
-        recyclerView1.layoutManager = LinearLayoutManager(this)
-
-        recyclerView2 = findViewById(R.id.tasks2)
-        adapter2 = TasksAdapter(tasks, ::onEditTask, ::onDeleteTask)
-        recyclerView2.adapter = adapter2
-        recyclerView2.layoutManager = LinearLayoutManager(this)
-
-        recyclerView3 = findViewById(R.id.tasks3)
-        adapter3 = TasksAdapter(tasks, ::onEditTask, ::onDeleteTask)
-        recyclerView3.adapter = adapter3
-        recyclerView3.layoutManager = LinearLayoutManager(this)
-
-        recyclerView4 = findViewById(R.id.tasks4)
-        adapter4 = TasksAdapter(tasks, ::onEditTask, ::onDeleteTask)
-
-        recyclerView5 = findViewById(R.id.tasks5)
-        adapter5 = TasksAdapter(tasks, ::onEditTask, ::onDeleteTask)
-
-        recyclerView6 = findViewById(R.id.tasks6)
-        adapter6 = TasksAdapter(tasks, ::onEditTask, ::onDeleteTask)
-
-        recyclerView7 = findViewById(R.id.tasks7)
-        adapter7 = TasksAdapter(tasks, ::onEditTask, ::onDeleteTask)
-
-        recyclerView8 = findViewById(R.id.tasks8)
-        adapter8 = TasksAdapter(tasks, ::onEditTask, ::onDeleteTask)
-
-        recyclerView9 = findViewById(R.id.tasks9)
-        adapter9 = TasksAdapter(tasks, ::onEditTask, ::onDeleteTask)
-
-        recyclerView10 = findViewById(R.id.tasks10)
-        adapter10 = TasksAdapter(tasks, ::onEditTask, ::onDeleteTask)
-
-        recyclerView11 = findViewById(R.id.tasks11)
-        adapter11 = TasksAdapter(tasks, ::onEditTask, ::onDeleteTask)
-
-        recyclerView12 = findViewById(R.id.tasks12)
-        adapter12 = TasksAdapter(tasks, ::onEditTask, ::onDeleteTask)
-
-        recyclerView13 = findViewById(R.id.tasks13)
-        adapter13 = TasksAdapter(tasks, ::onEditTask, ::onDeleteTask)
-
-        recyclerView14 = findViewById(R.id.tasks14)
-        adapter14 = TasksAdapter(tasks, ::onEditTask, ::onDeleteTask)
-
-        recyclerView15 = findViewById(R.id.tasks15)
-        adapter15 = TasksAdapter(tasks, ::onEditTask, ::onDeleteTask)
-
-        recyclerView16 = findViewById(R.id.tasks16)
-        adapter16 = TasksAdapter(tasks, ::onEditTask, ::onDeleteTask)
-
-        recyclerView17 = findViewById(R.id.tasks17)
-        adapter17 = TasksAdapter(tasks, ::onEditTask, ::onDeleteTask)
-
-        recyclerView18 = findViewById(R.id.tasks18)
-        adapter18 = TasksAdapter(tasks, ::onEditTask, ::onDeleteTask)
-
-        recyclerView19 = findViewById(R.id.tasks19)
-        adapter19 = TasksAdapter(tasks, ::onEditTask, ::onDeleteTask)
-
-        recyclerView20 = findViewById(R.id.tasks20)
-        adapter20 = TasksAdapter(tasks, ::onEditTask, ::onDeleteTask)
-
-        recyclerView21 = findViewById(R.id.tasks21)
-        adapter21 = TasksAdapter(tasks, ::onEditTask, ::onDeleteTask)
-
-        recyclerView22 = findViewById(R.id.tasks22)
-        adapter22 = TasksAdapter(tasks, ::onEditTask, ::onDeleteTask)
     }
 
 
@@ -221,61 +120,31 @@ class MainActivity : AppCompatActivity() {
                         .first().getDate()
                 }
                 val splitTaskList = splitTasksByHour(tasksList)
-                splitTaskList["0"]?.let { adapter0.setTasks(it) }
-                splitTaskList["1"]?.let { adapter1.setTasks(it) }
-                splitTaskList["2"]?.let { adapter2.setTasks(it) }
-                splitTaskList["3"]?.let { adapter3.setTasks(it) }
-                splitTaskList["4"]?.let { adapter4.setTasks(it) }
-                splitTaskList["5"]?.let { adapter5.setTasks(it) }
-                splitTaskList["6"]?.let { adapter6.setTasks(it) }
-                splitTaskList["7"]?.let { adapter7.setTasks(it) }
-                splitTaskList["8"]?.let { adapter8.setTasks(it) }
-                splitTaskList["9"]?.let { adapter9.setTasks(it) }
-                splitTaskList["10"]?.let { adapter10.setTasks(it) }
-                splitTaskList["11"]?.let { adapter11.setTasks(it) }
-                splitTaskList["12"]?.let { adapter12.setTasks(it) }
-                splitTaskList["13"]?.let { adapter13.setTasks(it) }
-                splitTaskList["14"]?.let { adapter14.setTasks(it) }
-                splitTaskList["15"]?.let { adapter15.setTasks(it) }
-                splitTaskList["16"]?.let { adapter16.setTasks(it) }
-                splitTaskList["17"]?.let { adapter17.setTasks(it) }
-                splitTaskList["18"]?.let { adapter18.setTasks(it) }
-                splitTaskList["19"]?.let { adapter19.setTasks(it) }
-                splitTaskList["20"]?.let { adapter20.setTasks(it) }
-                splitTaskList["21"]?.let { adapter21.setTasks(it) }
-                splitTaskList["22"]?.let { adapter22.setTasks(it) }
+                adapter.setTimes(splitTaskList)
             } catch (e: Exception) {
             }
         }
     }
 
-    private fun splitTasksByHour(tasks: List<Task>): Map<String, List<Task>> {
-        val tasksByHour = mutableMapOf<String, MutableList<Task>>()
+    private fun splitTasksByHour(tasks: List<Task>): List<TimeBox> {
+        val tasksByHour = mutableMapOf<Int, MutableList<Task>>()
         val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
 
         for (task in tasks) {
             val startDate = dateFormat.parse(task.dateStart) ?: continue
             val finishDate = dateFormat.parse(task.dateFinish) ?: continue
-
             val calendar = Calendar.getInstance().apply { time = startDate }
 
             while (calendar.time <= finishDate) {
-                val hourKey = SimpleDateFormat("HH", Locale.getDefault()).format(calendar.time)
+                val hourKey = calendar.get(Calendar.HOUR_OF_DAY)
                 tasksByHour.computeIfAbsent(hourKey) { mutableListOf() }.add(task)
                 calendar.add(Calendar.HOUR_OF_DAY, 1)
             }
         }
 
-        return tasksByHour
-    }
-
-
-    private fun onEditTask(task: Task) {
-
-    }
-
-    private fun onDeleteTask(id: Long) {
-
+        return (0..23).map { hour ->
+            TimeBox(time = hour, taskList = tasksByHour[hour] ?: mutableListOf())
+        }
     }
 
     private fun setupCalendar() {
