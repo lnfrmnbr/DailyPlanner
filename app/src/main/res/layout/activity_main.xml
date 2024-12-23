@@ -22,6 +22,14 @@
         app:multiSelection="false"
         android:fillViewport="true" />
 
+    <Button
+        android:id="@+id/add"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:backgroundTint="@color/black"
+        android:text="@string/add"
+        android:layout_gravity="center"/>
+
     <androidx.recyclerview.widget.RecyclerView
         android:background="@drawable/border"
         android:layout_width="match_parent"

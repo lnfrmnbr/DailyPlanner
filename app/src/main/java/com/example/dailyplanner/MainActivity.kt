@@ -1,8 +1,11 @@
 package com.example.dailyplanner
 
+import android.app.AlertDialog
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
+import android.widget.Button
+import android.widget.DatePicker
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -21,8 +24,8 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 import com.google.android.material.card.MaterialCardView
 import kotlinx.coroutines.launch
-import android.widget.ScrollView
-import android.widget.TableRow
+import android.widget.TimePicker
+import com.google.android.material.textfield.TextInputEditText
 import java.sql.Timestamp
 
 import java.util.Calendar
@@ -85,6 +88,9 @@ class MainActivity : AppCompatActivity() {
 
         fetchTasks()
 
+        findViewById<Button>(R.id.add).setOnClickListener{
+            showAddTaskDialog()
+        }
     }
 
 
@@ -107,19 +113,15 @@ class MainActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             try {
-//                db.taskListDao().deleteAllTaskLists()
-//                val newTask = Task(dateStart = "2024-12-22 12:22:22", dateFinish = "2024-12-22 15:23:23", name = "Спать", description = "Крепко спать")
-//                db.taskListDao().addTaskToList(newTask)
-//                val newTask2 = Task(dateStart = "2024-12-22 13:22:22", dateFinish = "2024-12-22 14:23:23", name = "Играть в комп", description = "Добить 40 ранг")
-//                db.taskListDao().addTaskToList(newTask2)
                 Log.e("VIK", "${db.taskListDao().getAllTaskLists()}")
                 val tasksList = TaskListTypeConverter().toTaskList(
                     db.taskListDao().getAllTaskLists()[0].tasksJson
                 ).filter {
-                    stringToTimestamp(it.dateStart)?.getDate() == calendar.getSelectedDates()
-                        .first().getDate()
+                    calendar.getSelectedDates().first() >= stringToTimestamp(it.dateStart)!! &&
+                            calendar.getSelectedDates().first() <= stringToTimestamp(it.dateFinish)!!
                 }
                 val splitTaskList = splitTasksByHour(tasksList)
+                Log.e("VIK", "$splitTaskList")
                 adapter.setTimes(splitTaskList)
             } catch (e: Exception) {
             }
@@ -133,19 +135,103 @@ class MainActivity : AppCompatActivity() {
         for (task in tasks) {
             val startDate = dateFormat.parse(task.dateStart) ?: continue
             val finishDate = dateFormat.parse(task.dateFinish) ?: continue
-            val calendar = Calendar.getInstance().apply { time = startDate }
 
-            while (calendar.time <= finishDate) {
-                val hourKey = calendar.get(Calendar.HOUR_OF_DAY)
-                tasksByHour.computeIfAbsent(hourKey) { mutableListOf() }.add(task)
-                calendar.add(Calendar.HOUR_OF_DAY, 1)
+            val startOfDay = Calendar.getInstance().apply {
+                time = calendar.getSelectedDates().first()
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 59)
+                set(Calendar.SECOND, 59)
+                set(Calendar.MILLISECOND, 999)
+            }.time
+
+            val endOfDay = Calendar.getInstance().apply {
+                time = calendar.getSelectedDates().first()
+                set(Calendar.HOUR_OF_DAY, 23)
+                set(Calendar.MINUTE, 59)
+                set(Calendar.SECOND, 59)
+                set(Calendar.MILLISECOND, 999)
+            }.time
+
+            val calendarDop = Calendar.getInstance().apply { time = startOfDay }
+            Log.e("VIK", "$endOfDay")
+            while (calendarDop.time <= endOfDay) {
+                val hourKey = calendarDop.get(Calendar.HOUR_OF_DAY)
+                Log.e("VIK", "$startDate $finishDate ${calendarDop.time}")
+
+                if ((calendarDop.time >= startDate)){
+                    tasksByHour.computeIfAbsent(hourKey) { mutableListOf() }.add(task)
+                }
+
+                calendarDop.add(Calendar.HOUR_OF_DAY, 1)
             }
         }
 
         return (0..23).map { hour ->
-            TimeBox(time = hour, taskList = tasksByHour[hour] ?: mutableListOf())
+            TimeBox(time = hour, taskList = tasksByHour[hour]?.distinct()?.toMutableList() ?: mutableListOf())
         }
     }
+
+
+
+    private fun showAddTaskDialog() {
+        val builder = AlertDialog.Builder(this)
+        val inflater = layoutInflater
+        val dialogLayout = inflater.inflate(R.layout.dialog_task, null)
+
+        val nameInput = dialogLayout.findViewById<TextInputEditText>(R.id.name)
+        val descrInput = dialogLayout.findViewById<TextInputEditText>(R.id.descr)
+        val dateStartInput = dialogLayout.findViewById<DatePicker>(R.id.datePickerStart)
+        val timeStartInput = dialogLayout.findViewById<TimePicker>(R.id.timePickerStart)
+
+        val timeFinishInput = dialogLayout.findViewById<TextInputEditText>(R.id.timeFinish)
+
+        val sdfDateStart = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val sdfTimeStart = SimpleDateFormat("HH:mm", Locale.getDefault())
+
+
+        builder.setTitle("Добавить дело")
+            .setPositiveButton("Добавить") { _, _ ->
+                val name = nameInput.text.toString()
+                val descr = descrInput.text.toString()
+                var calendar = Calendar.getInstance()
+                var selectedDate = Calendar.getInstance()
+                dateStartInput.init(
+                    dateStartInput.year,
+                    dateStartInput.month,
+                    dateStartInput.dayOfMonth
+                ) { _, year, month, dayOfMonth ->
+                    selectedDate = Calendar.getInstance().apply {
+                        set(year, month, dayOfMonth)
+                    }
+                }
+
+                timeStartInput.setOnTimeChangedListener { _, hourOfDay, minute ->
+                    calendar = Calendar.getInstance().apply {
+                        set(Calendar.HOUR_OF_DAY, hourOfDay)
+                        set(Calendar.MINUTE, minute)
+                    }
+
+                }
+                val dateStart = sdfDateStart.format(selectedDate.time)
+                val timeStart = sdfTimeStart.format(calendar.time)
+                val timeFinish = timeFinishInput.text.toString()
+
+                val newTask = Task(name = name, description = descr, dateStart = "$dateStart $timeStart:00", dateFinish =  "2024-12-23 23:22:12")
+
+                lifecycleScope.launch {
+                    try {
+                        db.taskListDao().addTaskToList(newTask)
+                        fetchTasks()
+                    } catch (e: Exception) {
+                    }
+                }
+            }
+            .setNegativeButton("Отмена") { dialog, _ -> dialog.cancel() }
+
+        builder.setView(dialogLayout)
+        builder.show()
+    }
+
 
     private fun setupCalendar() {
         val myCalendarViewManager = object : CalendarViewManager {
@@ -184,31 +270,9 @@ class MainActivity : AppCompatActivity() {
         }
 
         val myCalendarChangesObserver = object : CalendarChangesObserver {
-            override fun whenWeekMonthYearChanged(
-                weekNumber: String,
-                monthNumber: String,
-                monthName: String,
-                year: String,
-                date: Date
-            ) {
-                super.whenWeekMonthYearChanged(weekNumber, monthNumber, monthName, year, date)
-            }
-
             override fun whenSelectionChanged(isSelected: Boolean, position: Int, date: Date) {
                 super.whenSelectionChanged(isSelected, position, date)
                 fetchTasks()
-            }
-
-            override fun whenCalendarScrolled(dx: Int, dy: Int) {
-                super.whenCalendarScrolled(dx, dy)
-            }
-
-            override fun whenSelectionRestored() {
-                super.whenSelectionRestored()
-            }
-
-            override fun whenSelectionRefreshed() {
-                super.whenSelectionRefreshed()
             }
         }
 
