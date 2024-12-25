@@ -3,7 +3,6 @@ package com.example.dailyplanner
 import android.app.AlertDialog
 import android.graphics.Color
 import android.os.Bundle
-import android.util.Log
 import android.widget.Button
 import android.widget.DatePicker
 import android.widget.TextView
@@ -25,6 +24,7 @@ import java.util.Locale
 import com.google.android.material.card.MaterialCardView
 import kotlinx.coroutines.launch
 import android.widget.TimePicker
+import android.widget.Toast
 import com.google.android.material.textfield.TextInputEditText
 import java.sql.Timestamp
 
@@ -63,7 +63,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var recyclerView: RecyclerView
     private lateinit var calendar: SingleRowCalendar
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -85,12 +84,14 @@ class MainActivity : AppCompatActivity() {
         recyclerView.adapter = adapter
         recyclerView.layoutManager = LinearLayoutManager(this)
 
-
-        fetchTasks()
-
-        findViewById<Button>(R.id.add).setOnClickListener{
+        findViewById<Button>(R.id.add).setOnClickListener {
             showAddTaskDialog()
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        fetchTasks()
     }
 
 
@@ -113,17 +114,26 @@ class MainActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             try {
-                Log.e("VIK", "${db.taskListDao().getAllTaskLists()}")
+                val selectedDate = calendar.getSelectedDates().first()
+
+                val calendarInstance = Calendar.getInstance().apply {
+                    time = selectedDate
+                    set(Calendar.HOUR_OF_DAY, 0)
+                    set(Calendar.MINUTE, 0)
+                    set(Calendar.SECOND, 0)
+                    set(Calendar.MILLISECOND, 0)
+                }
+
+                val dateAtMidnight = calendarInstance.time
                 val tasksList = TaskListTypeConverter().toTaskList(
                     db.taskListDao().getAllTaskLists()[0].tasksJson
                 ).filter {
-                    calendar.getSelectedDates().first() >= stringToTimestamp(it.dateStart)!! &&
-                            calendar.getSelectedDates().first() <= stringToTimestamp(it.dateFinish)!!
+                    dateAtMidnight <= stringToTimestamp(it.dateStart)!! ||
+                            dateAtMidnight <= stringToTimestamp(it.dateFinish)!!
                 }
                 val splitTaskList = splitTasksByHour(tasksList)
-                Log.e("VIK", "$splitTaskList")
                 adapter.setTimes(splitTaskList)
-            } catch (e: Exception) {
+            } catch (_: Exception) {
             }
         }
     }
@@ -131,7 +141,6 @@ class MainActivity : AppCompatActivity() {
     private fun splitTasksByHour(tasks: List<Task>): List<TimeBox> {
         val tasksByHour = mutableMapOf<Int, MutableList<Task>>()
         val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
-
         for (task in tasks) {
             val startDate = dateFormat.parse(task.dateStart) ?: continue
             val finishDate = dateFormat.parse(task.dateFinish) ?: continue
@@ -153,12 +162,10 @@ class MainActivity : AppCompatActivity() {
             }.time
 
             val calendarDop = Calendar.getInstance().apply { time = startOfDay }
-            Log.e("VIK", "$endOfDay")
             while (calendarDop.time <= endOfDay) {
                 val hourKey = calendarDop.get(Calendar.HOUR_OF_DAY)
-                Log.e("VIK", "$startDate $finishDate ${calendarDop.time}")
 
-                if ((calendarDop.time >= startDate)){
+                if ((calendarDop.time >= startDate) && ((calendarDop.time <= finishDate) || (calendarDop.time.hours == finishDate.hours))) {
                     tasksByHour.computeIfAbsent(hourKey) { mutableListOf() }.add(task)
                 }
 
@@ -167,62 +174,93 @@ class MainActivity : AppCompatActivity() {
         }
 
         return (0..23).map { hour ->
-            TimeBox(time = hour, taskList = tasksByHour[hour]?.distinct()?.toMutableList() ?: mutableListOf())
+            TimeBox(
+                time = hour,
+                taskList = tasksByHour[hour]?.distinct()?.toMutableList() ?: mutableListOf()
+            )
         }
     }
-
-
 
     private fun showAddTaskDialog() {
         val builder = AlertDialog.Builder(this)
         val inflater = layoutInflater
         val dialogLayout = inflater.inflate(R.layout.dialog_task, null)
-
         val nameInput = dialogLayout.findViewById<TextInputEditText>(R.id.name)
         val descrInput = dialogLayout.findViewById<TextInputEditText>(R.id.descr)
         val dateStartInput = dialogLayout.findViewById<DatePicker>(R.id.datePickerStart)
         val timeStartInput = dialogLayout.findViewById<TimePicker>(R.id.timePickerStart)
-
-        val timeFinishInput = dialogLayout.findViewById<TextInputEditText>(R.id.timeFinish)
-
-        val sdfDateStart = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-        val sdfTimeStart = SimpleDateFormat("HH:mm", Locale.getDefault())
-
+        val dateFinishInput = dialogLayout.findViewById<DatePicker>(R.id.datePickerFinish)
+        val timeFinishInput = dialogLayout.findViewById<TimePicker>(R.id.timePickerFinish)
 
         builder.setTitle("Добавить дело")
             .setPositiveButton("Добавить") { _, _ ->
                 val name = nameInput.text.toString()
                 val descr = descrInput.text.toString()
-                var calendar = Calendar.getInstance()
-                var selectedDate = Calendar.getInstance()
-                dateStartInput.init(
-                    dateStartInput.year,
-                    dateStartInput.month,
-                    dateStartInput.dayOfMonth
-                ) { _, year, month, dayOfMonth ->
-                    selectedDate = Calendar.getInstance().apply {
-                        set(year, month, dayOfMonth)
-                    }
+                val startYear = dateStartInput.year
+                val startMonth = dateStartInput.month
+                val startDay = dateStartInput.dayOfMonth
+                val startHour = timeStartInput.hour
+                val startMinute = timeStartInput.minute
+
+                val finishYear = dateFinishInput.year
+                val finishMonth = dateFinishInput.month
+                val finishDay = dateFinishInput.dayOfMonth
+                val finishHour = timeFinishInput.hour
+                val finishMinute = timeFinishInput.minute
+
+                val startDate = Calendar.getInstance().apply {
+                    set(startYear, startMonth, startDay, startHour, startMinute)
+                }
+                val finishDate = Calendar.getInstance().apply {
+                    set(finishYear, finishMonth, finishDay, finishHour, finishMinute)
                 }
 
-                timeStartInput.setOnTimeChangedListener { _, hourOfDay, minute ->
-                    calendar = Calendar.getInstance().apply {
-                        set(Calendar.HOUR_OF_DAY, hourOfDay)
-                        set(Calendar.MINUTE, minute)
-                    }
-
+                if (name.isEmpty() || descr.isEmpty()) {
+                    Toast.makeText(this, "Заполните поля названия и описания", Toast.LENGTH_LONG)
+                        .show()
+                    return@setPositiveButton
                 }
-                val dateStart = sdfDateStart.format(selectedDate.time)
-                val timeStart = sdfTimeStart.format(calendar.time)
-                val timeFinish = timeFinishInput.text.toString()
 
-                val newTask = Task(name = name, description = descr, dateStart = "$dateStart $timeStart:00", dateFinish =  "2024-12-23 23:22:12")
+                if (startDate.after(finishDate)) {
+                    Toast.makeText(
+                        this,
+                        "Дата начала не может быть больше даты окончания",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    return@setPositiveButton
+                }
+
+                val newTask = Task(
+                    name = name,
+                    description = descr,
+                    dateStart = String.format(
+                        "%04d-%02d-%02d %02d:%02d:00",
+                        startYear,
+                        startMonth + 1,
+                        startDay,
+                        startHour,
+                        startMinute
+                    ),
+                    dateFinish = String.format(
+                        "%04d-%02d-%02d %02d:%02d:00",
+                        finishYear,
+                        finishMonth + 1,
+                        finishDay,
+                        finishHour,
+                        finishMinute
+                    )
+                )
 
                 lifecycleScope.launch {
                     try {
                         db.taskListDao().addTaskToList(newTask)
                         fetchTasks()
                     } catch (e: Exception) {
+                        Toast.makeText(
+                            this@MainActivity,
+                            "Ошибка добавления дела",
+                            Toast.LENGTH_LONG
+                        ).show()
                     }
                 }
             }
@@ -231,7 +269,6 @@ class MainActivity : AppCompatActivity() {
         builder.setView(dialogLayout)
         builder.show()
     }
-
 
     private fun setupCalendar() {
         val myCalendarViewManager = object : CalendarViewManager {

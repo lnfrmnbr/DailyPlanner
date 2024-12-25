@@ -36,24 +36,29 @@ android {
     }
 }
 
+
 dependencies {
-    kapt("androidx.room:room-compiler:2.6.1")
-    implementation("com.jakewharton.threetenabp:threetenabp:1.3.1")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.5.1")
-    implementation("androidx.room:room-ktx:2.6.1")
-    implementation("androidx.room:room-runtime:2.6.1")
-    implementation("com.google.code.gson:gson:2.8.9")
+    implementation(libs.androidx.runner)
+    androidTestImplementation(libs.androidx.junit.v115)
+    androidTestImplementation(libs.androidx.espresso.core.v351)
+    implementation(libs.androidx.junit.ktx)
+    kapt(libs.androidx.room.compiler)
+    implementation(libs.threetenabp)
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    implementation(libs.androidx.room.ktx)
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.gson)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
-    implementation("com.google.android.material:material:1.0.0")
-    implementation("com.github.misosvec:SingleRowCalendar:1.0.0")
+    implementation(libs.material.v100)
+    implementation(libs.singlerowcalendar)
     implementation(libs.androidx.room.common)
     testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
+    testImplementation(libs.androidx.room.testing)
 }
+
 
 

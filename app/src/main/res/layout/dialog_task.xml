@@ -1,104 +1,116 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical">
-
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/name_layout"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
-        android:layout_width="276dp"
-        android:layout_height="62dp"
-        android:layout_marginTop="20dp"
-        android:ems="10"
-        android:hint="Название"
-        android:inputType="text"
-        app:boxStrokeColor="@color/black"
-        app:endIconTint="@color/black"
-        app:hintTextColor="@color/black"
-        app:startIconTint="@color/black">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/name"
-            android:layout_width="match_parent"
-            android:layout_height="54dp"
-            android:inputType="text"
-            android:maxLength="50" />
-    </com.google.android.material.textfield.TextInputLayout>
-
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/descr_layout"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
-        android:layout_width="276dp"
-        android:layout_height="62dp"
-        android:layout_marginTop="10dp"
-        android:ems="10"
-        android:hint="Описание"
-        android:inputType="text"
-        app:boxStrokeColor="@color/black"
-        app:endIconTint="@color/black"
-        app:hintTextColor="@color/black"
-        app:startIconTint="@color/black">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/descr"
-            android:layout_width="match_parent"
-            android:layout_height="54dp"
-            android:inputType="text"
-            android:maxLength="50" />
-    </com.google.android.material.textfield.TextInputLayout>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="18sp"
-        android:text="Выберите дату начала:"/>
+    android:layout_height="wrap_content">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:gravity="center">
+        android:padding="10dp">
 
-        <DatePicker
-            android:id="@+id/datePickerStart"
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/name_layout"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+            android:layout_width="276dp"
+            android:layout_height="62dp"
+            android:layout_marginTop="20dp"
+            android:ems="10"
+            android:hint="@string/name"
+            android:inputType="text"
+            app:boxStrokeColor="@color/black"
+            app:endIconTint="@color/black"
+            app:hintTextColor="@color/black"
+            app:startIconTint="@color/black">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/name"
+                android:layout_width="match_parent"
+                android:layout_height="54dp"
+                android:inputType="text"
+                android:maxLength="50" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/descr_layout"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+            android:layout_width="276dp"
+            android:layout_height="62dp"
+            android:layout_marginTop="10dp"
+            android:ems="10"
+            android:hint="@string/descriotion"
+            android:inputType="text"
+            app:boxStrokeColor="@color/black"
+            app:endIconTint="@color/black"
+            app:hintTextColor="@color/black"
+            app:startIconTint="@color/black">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/descr"
+                android:layout_width="match_parent"
+                android:layout_height="54dp"
+                android:inputType="text"
+                android:maxLength="50" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:calendarViewShown="false"
-            android:datePickerMode="spinner"/>
+            android:textSize="18sp"
+            android:text="@string/select_start_date"/>
 
-        <TimePicker
-            android:id="@+id/timePickerStart"
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <DatePicker
+                android:id="@+id/datePickerStart"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:calendarViewShown="false"
+                android:datePickerMode="spinner"/>
+
+            <TimePicker
+                android:id="@+id/timePickerStart"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:timePickerMode="spinner"
+                />
+
+
+        </LinearLayout>
+
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:timePickerMode="spinner"
-            />
+            android:textSize="18sp"
+            android:text="@string/select_finish_date"/>
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <DatePicker
+                android:id="@+id/datePickerFinish"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:calendarViewShown="false"
+                android:datePickerMode="spinner"/>
+
+            <TimePicker
+                android:id="@+id/timePickerFinish"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:timePickerMode="spinner"
+                />
+
+        </LinearLayout>
 
     </LinearLayout>
 
-
-    <com.google.android.material.textfield.TextInputLayout
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
-        android:layout_width="276dp"
-        android:layout_height="62dp"
-        android:layout_marginTop="10dp"
-        android:layout_gravity="center"
-        android:ems="10"
-        android:hint="Дата и время окончания"
-        android:inputType="text"
-        app:boxStrokeColor="@color/black"
-        app:endIconTint="@color/black"
-        app:hintTextColor="@color/black"
-        app:startIconTint="@color/black">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/timeFinish"
-            android:layout_width="match_parent"
-            android:layout_height="54dp"
-            android:inputType="datetime"
-            android:maxLength="50" />
-    </com.google.android.material.textfield.TextInputLayout>
-
-</LinearLayout>
+</ScrollView>
